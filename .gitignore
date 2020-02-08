@@ -1,3 +1,3 @@
 /node_modules
 package-lock.json
-/config/test.env2
+/config/.env
