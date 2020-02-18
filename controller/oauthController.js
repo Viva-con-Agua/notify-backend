@@ -2,6 +2,7 @@ const Axios = require("axios");
 
 var NodeGeocoder = require('node-geocoder');
 const geolib = require('geolib');
+var dateFormat = require('dateformat');
 
 
 function getLongLat(userZipCity) {
@@ -42,9 +43,11 @@ exports.notify = async (req, res) => {
       var userId = p.id;
 
 
-      const s = await fetchEvents("code");
 
+      const s = await fetchEvents("code");
       const recommendedEvents = await fetchRecommendedEvents("code");
+
+
 
       var poolEvents = [];
 
@@ -66,26 +69,42 @@ exports.notify = async (req, res) => {
         var distanceUserPoolEventInMeters = geolib.getDistance(poolEventGeo, userGeo);
         var poolEventDistanceInKilometers = distanceUserPoolEventInMeters / 1000;
 
+        var poolEventDateString = dateFormat(new Date(poolEventDate), "dd.mm.yyyy");
+        var poolEventTimeString = dateFormat(new Date(poolEventDate), "h:MM:ss");
+
+
+
         // Favorite Artist?
         var newNotifyAdded = false;
         for (var x = 0; x < recommendedEvents.data.length; x++) {
           if (poolEventId == recommendedEvents.data[x].actionId) {
             var poolEventFavoriteArtistName = recommendedEvents.data[x].artistName;
+            var poolEventRecursionDepth = recommendedEvents.data[x].recursionDepth;
+            var poolEventArtistHeuristicName = recommendedEvents.data[x].artistHeuristicName;
+
+
 
             var notifyParameters = {
               "poolEventName": poolEventName,
               "poolEventLat": poolEventLat,
               "poolEventLong": poolEventLong,
               "poolEventCity": poolEventCity,
-              "poolEventDate": poolEventDate,
+              "poolEventDate": poolEventDateString,
+              "poolEventTime": poolEventTimeString,
               "poolEventDistanceKm": poolEventDistanceInKilometers,
-              "poolEventFavoriteArtist": poolEventFavoriteArtistName
+              "poolEventFavoriteArtist": poolEventFavoriteArtistName,
+              "poolEventRecursionDepth": poolEventRecursionDepth,
+              "poolEventArtistHeuristicName": poolEventArtistHeuristicName
             };
+
+
+
 
             var notify = {
               "notifyMicroservice": "SUGGESTY",
               "notifyCreatedAt": poolEventCreatedAt,
               "notifyLink": "#",
+              "notifyValidUntil": poolEventDate,
               "notifyParameters": notifyParameters
             }
             poolEvents.push(notify);
@@ -102,7 +121,8 @@ exports.notify = async (req, res) => {
             "poolEventLat": poolEventLat,
             "poolEventLong": poolEventLong,
             "poolEventCity": poolEventCity,
-            "poolEventDate": poolEventDate,
+            "poolEventDate": poolEventDateString,
+            "poolEventTime": poolEventTimeString,
             "poolEventDistanceKm": poolEventDistanceInKilometers
           };
 
@@ -110,14 +130,45 @@ exports.notify = async (req, res) => {
             "notifyMicroservice": "WAVES",
             "notifyCreatedAt": poolEventCreatedAt,
             "notifyLink": "#",
+            "notifyValidUntil": poolEventDate,
             "notifyParameters": notifyParameters
+
           }
           poolEvents.push(notify);
         }
       }
     }
 
-    res.json(poolEvents);
+
+
+    poolEvents.sort(function(a,b){
+      // Turn your strings into dates, and then subtract them
+      // to get a value that is either negative, positive, or zero.
+      return new Date(b.notifyCreatedAt) - new Date(a.notifyCreatedAt);
+    });
+
+    var today = new Date();
+
+
+
+    var poolEventsFinal = [];
+
+    for(var x = 0; x < poolEvents.length; x++){
+
+      if(today < new Date (poolEvents[x].notifyValidUntil)){
+
+        var poolEvent = poolEvents[x];
+        poolEvent.notifyValidUntil = dateFormat(new Date(poolEvents[x].notifyValidUntil), "dd.mm.yyyy h:MM:ss");
+        poolEvent.notifyCreatedAt = dateFormat(new Date(poolEvents[x].notifyCreatedAt), "dd.mm.yyyy h:MM:ss");
+        poolEventsFinal.push(poolEvent);
+
+       // poolEventsFinal[x].notifyValidUntil = dateFormat(new Date(poolEventsFinal[x].notifyValidUntil), "h:MM:ss dd.mm.yyyy");
+      }
+
+    }
+
+
+    res.json(poolEventsFinal);
 
   } catch (error) {
 
