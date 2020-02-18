@@ -5,6 +5,8 @@ const {
   updateLastSeen
 } = require("../controller/notifyController");
 const { getNewEvents } = require("../controller/eventController");
+const { getCommentReactions } = require("../controller/commentController");
+
 var NodeGeocoder = require("node-geocoder");
 const geolib = require("geolib");
 const var_dump = require("var_dump");
@@ -57,6 +59,10 @@ exports.notify = async (req, res) => {
 
       // var_dump(filteredEvents);
 
+      var filteredComment = await getCommentReactions(userId);
+
+      // var_dump(filteredComment);
+
       // var config = await {
       //   headers: { Authorization: `Bearer `, access_token }
       // };
@@ -89,48 +95,6 @@ exports.notify = async (req, res) => {
           console.log("INTEREST: ", application.poolevent_id);
         }
       });
-
-      var filteredComment = [];
-      var commented = await fetchUserComments(userId);
-      for (var j = 0; j < commented.data.length; j++) {
-        var votes = await fetchVotes(commented.data[j].id);
-        var resps = await fetchResponses(commented.data[j].id);
-        var reactions = votes.data.concat(resps.data);
-        latest = 0;
-
-        if (reactions.length > 0) {
-          if (reactions.length > 1) {
-            var mostRecentDate = new Date(
-              Math.max.apply(
-                null,
-                reactions.map(e => {
-                  return new Date(e.created_at);
-                })
-              )
-            );
-            var latest = reactions.filter(e => {
-              var d = new Date(e.created_at);
-              return d.getTime() == mostRecentDate.getTime();
-            })[0];
-          } else {
-            latest = reactions;
-          }
-          commented.data[j].notifyParameters = {
-            type: "comment",
-            typeId: commented.data[j].id,
-            commentResponse: "NEW RESPONSE",
-            responseDate: latest.created_at,
-            responseUser: latest.user_id,
-            poolEventName: commented.data[j].poolevent_id,
-            commentDate: commented.data[j].created_at
-          };
-          commented.data[j].created_at = latest.created_at;
-          commented.data[j].Microservice = "WAVES.Comment";
-
-          filteredComment.push(commented.data[j]);
-          console.log("REACT : ", commented.data[j].id);
-        }
-      }
 
       var favorites = await fetchFavorites(userId);
       // var_dump(favorites);
@@ -200,6 +164,9 @@ exports.notify = async (req, res) => {
           }
         }
       }
+
+      //Check with Database (What has user already seen)
+      //------------------------------------------------
 
       var poolEventStatus;
       var promises = [];
@@ -460,39 +427,6 @@ const fetchComments = async event => {
   try {
     const { data } = await Axios.get(
       "http://localhost:5000/waves/api/v1/comment/" + event
-    );
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-const fetchUserComments = async user => {
-  try {
-    const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/comment/user/" + user
-    );
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-const fetchVotes = async comment => {
-  try {
-    const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/vote/" + comment
-    );
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-const fetchResponses = async comment => {
-  try {
-    const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/comment/response/" + comment
     );
     return data;
   } catch (error) {
