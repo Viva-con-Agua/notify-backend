@@ -78,9 +78,9 @@ exports.getLastSeen = (type, userId, pooleventId) =>
     });
   });
 
-exports.updateLastSeen = (type, userId, pooleventId, callback) => {
+exports.updateLastSeen = (type, userId, pooleventId, status, callback) => {
   try {
-    const sql = `INSERT INTO notifications SET type_id='${pooleventId}', user_id = '${userId}',type = '${type}', date=CURRENT_TIMESTAMP()`;
+    const sql = `INSERT INTO notifications SET type_id='${pooleventId}', user_id = '${userId}',type = '${type}', date=CURRENT_TIMESTAMP(), status='${status}'`;
     // console.log(sql);
     global.conn.query(sql, (error, comment) => {
       // console.log(comment);

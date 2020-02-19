@@ -1,6 +1,6 @@
 const { connectMysql } = require("./config/connectMysql");
 
-const eventEmitter = require("./service/eventEmitter");
+const natsSubscribtion = require("./service/natsSubscribtion.js");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const morgan = require("morgan")("dev");
@@ -18,7 +18,7 @@ var server = require("http").Server(app);
 var io = require("socket.io")(server);
 
 socket(io);
-eventEmitter();
+// eventEmitter();
 
 if (process.env.NODE_ENV == "dev") {
   app.use(morgan);
@@ -39,3 +39,5 @@ server.listen(port, () => {
     `App running in ${process.env.NODE_ENV} mode on port ${port}`.green.bold
   );
 });
+
+natsSubscribtion();
