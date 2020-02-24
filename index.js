@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const morgan = require("morgan")("dev");
 const express = require("express");
-const notify = require("./routes/notify")
+const notify = require("./routes/notify");
 const socket = require("./socket");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -30,9 +30,7 @@ app.use(cookieParser());
 connectMysql();
 app.use(cors());
 
-
 app.use("/v1/events", notify);
-
 
 const port = process.env.PORT || 8005;
 
