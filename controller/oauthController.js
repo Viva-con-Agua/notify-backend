@@ -10,7 +10,9 @@ const { getCommentReactions } = require("../controller/commentController");
 var NodeGeocoder = require("node-geocoder");
 const geolib = require("geolib");
 const var_dump = require("var_dump");
-var sortBy = require("array-sort-by");
+//var sortBy = require("array-sort-by");
+
+const dateFormat = require("dateFormat");
 
 function getLongLat(userZipCity) {
   return new Promise(resolve => {
@@ -325,10 +327,26 @@ exports.notify = async (req, res) => {
         promises.push(promise);
       });
 
+
       Promise.all(promises).then(() => {
-        sortBy(poolEvents, s => -new Date(s.notifyCreatedAt));
+
+
+        var poolEventsFinal = [];
+        for(var x = 0; x < poolEvents.length; x++){
+          //if(today < new Date (poolEvents[x].notifyValidUntil)){
+            var poolEvent = poolEvents[x];
+            poolEvent.notifyCreatedAt = dateFormat(new Date(poolEvents[x].notifyCreatedAt), "dd.mm.yyyy h:MM:ss");
+            poolEventsFinal.push(poolEvent);
+            // poolEventsFinal[x].notifyValidUntil = dateFormat(new Date(poolEventsFinal[x].notifyValidUntil), "h:MM:ss dd.mm.yyyy");
+          //}
+        }
+
+
+        res.json(poolEventsFinal);
+
+        //sortBy(poolEvents, s => -new Date(s.notifyCreatedAt));
         // var_dump(poolEvents);
-        res.json(poolEvents);
+       // res.json(poolEvents);
       });
     }
   } catch (error) {
@@ -387,17 +405,7 @@ const fetchProfile = async access_token => {
   }
 };
 
-const fetchRecommendedEvents = async code => {
-  try {
-    const { data } = await Axios.get(
-      `http://localhost:5001/suggesty/api/v1/spotify/suggestion/user/a1f198b5-09f0-4271-b3b3-89e4a0e655e7`
-    );
 
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
 
 const fetchApplications = async config => {
   try {

@@ -1,18 +1,19 @@
 const Axios = require("axios");
 const geolib = require("geolib");
+const dateFormat = require("dateFormat");
+
 
 exports.getNewEvents = async (userGeo, callback) => {
   // new Promise((resolve, reject) => {
   try {
-    console.log("Get new poolevents!");
+
 
     const events = await fetchEvents("code");
 
-    // const recommendedEvents = await fetchRecommendedEvents("code");
-    const recommendedEvents = [];
-    recommendedEvents.data = [];
+     const recommendedEvents = await fetchRecommendedEvents("code");
 
-    // var_dump(s.data);
+    console.log(recommendedEvents);
+
 
     var filteredEvents = [];
 
@@ -40,12 +41,43 @@ exports.getNewEvents = async (userGeo, callback) => {
           typeId: poolEvent.id,
           poolEventName: poolEvent.name,
           poolEventCity: poolEvent.locality,
-          poolEventDate: poolEvent.event_start,
+          poolEventDate: dateFormat(new Date(poolEvent.event_start), "dd.mm.yyyy"),
+          poolEventTime: dateFormat(new Date(poolEvent.event_start), "hh:MM:ss"),
           poolEventApplicationEnd: poolEvent.application_end
         };
         filteredEvents.push(poolEvent);
         console.log("NEC: ", poolEvent.name);
         poolEvent.chosen = true;
+      }
+
+      if (poolEvent.chosen !== true) {
+        //Awareness Pipeline: Recomendations
+        //Von Suggesty
+        //--------------------------------
+        for (var x = 0; x < recommendedEvents.data.length; x++) {
+          if (poolEvent.id == recommendedEvents.data[x].actionId) {
+            console.log("Volltreffer");
+            var poolEventFavoriteArtistName = recommendedEvents.data[x].artistName;
+            var poolEventRecursionDepth = recommendedEvents.data[x].recursionDepth;
+            var poolEventArtistHeuristicName = recommendedEvents.data[x].artistHeuristicName;
+
+            poolEvent.Microservice = "SUGGESTY";
+            poolEvent.notifyParameters = {
+              type: "event",
+              typeId: poolEvent.id,
+              poolEventName: poolEvent.name,
+              poolEventCity: poolEvent.locality,
+              poolEventDate: dateFormat(new Date(poolEvent.event_start), "dd.mm.yyyy"),
+              poolEventTime: dateFormat(new Date(poolEvent.event_start), "hh:MM:ss"),
+              poolEventFavoriteArtist: poolEventFavoriteArtistName,
+              poolEventRecursionDepth: poolEventRecursionDepth,
+              poolEventArtistHeuristicName: poolEventArtistHeuristicName
+            };
+            filteredEvents.push(poolEvent);
+            console.log("SUC: ", poolEvent.name);
+            poolEvent.chosen = true;
+          }
+        }
       }
 
       if (poolEvent.chosen !== true) {
@@ -73,7 +105,8 @@ exports.getNewEvents = async (userGeo, callback) => {
             typeId: poolEvent.id,
             poolEventName: poolEvent.name,
             poolEventCity: poolEvent.locality,
-            poolEventDate: poolEvent.event_start,
+            poolEventDate: dateFormat(new Date(poolEvent.event_start), "dd.mm.yyyy"),
+            poolEventTime: dateFormat(new Date(poolEvent.event_start), "hh:MM:ss"),
             poolEventDistanceKm: distanceInKm
           };
           filteredEvents.push(poolEvent);
@@ -82,30 +115,7 @@ exports.getNewEvents = async (userGeo, callback) => {
         }
       }
 
-      if (poolEvent.chosen !== true) {
-        //Awareness Pipeline: Recomendations
-        //Von Suggesty
-        //--------------------------------
-        for (var x = 0; x < recommendedEvents.data.length; x++) {
-          if (poolEvent.id == recommendedEvents.data[x].actionId) {
-            var poolEventFavoriteArtistName =
-              recommendedEvents.data[x].artistName;
 
-            poolEvent.Microservice = "SUGGESTY";
-            poolEvent.notifyParameters = {
-              type: "event",
-              typeId: poolEvent.id,
-              poolEventName: poolEvent.name,
-              poolEventCity: poolEvent.locality,
-              poolEventDate: poolEvent.event_start,
-              poolEventFavoriteArtist: poolEventFavoriteArtistName
-            };
-            filteredEvents.push(poolEvent);
-            console.log("SUC: ", poolEvent.name);
-            poolEvent.chosen = true;
-          }
-        }
-      }
     });
     return filteredEvents;
   } catch (error) {
@@ -118,6 +128,18 @@ const fetchEvents = async code => {
     const { data } = await Axios.get(
       `http://localhost:5000/waves/api/v1/poolevent/notify`
     );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const fetchRecommendedEvents = async code => {
+  try {
+    const { data } = await Axios.get(
+      `http://localhost:5001/suggesty/api/v1/spotify/suggestion/user/a1f198b5-09f0-4271-b3b3-89e4a0e655e7`
+    );
+
     return data;
   } catch (error) {
     throw error;

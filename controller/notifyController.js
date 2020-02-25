@@ -13,26 +13,6 @@ exports.getNotificationsByVcaId = (req, res) => {
     });
   }
 };
-// exports.getStatus = async (type, userId, pooleventId) => {
-//   // let { pooleventId, userId, type } = req.query;
-//   // console.log(pooleventId);
-//   // console.log(userId);
-//   // console.log(type);
-
-//   const sql = `SELECT status
-//               FROM notifications
-//               WHERE type_id='${pooleventId}' AND user_id = '${userId}' AND type = '${type}';`;
-//   console.log(sql);
-//   global.conn.query(sql, (err, data) => {
-//     if (err) {
-//       throw error;
-//     } else {
-//       console.log(data);
-
-//       return data;
-//     }
-//   });
-// };
 
 exports.getStatus = (type, userId, pooleventId) =>
   new Promise((resolve, reject) => {
@@ -95,10 +75,100 @@ exports.updateLastSeen = (type, userId, pooleventId, callback) => {
   }
 };
 
-exports.deleteEvent = (req, res) => {
+exports.deleteEvents = async (req, res) => {
+  console.log("deleteEvents");
+
+  var userId = "a1f198b5-09f0-4271-b3b3-89e4a0e655e7";
+
+  var promises = [];
+
+  //console.log(req.body);
+
+  for(var x = 0; x < req.body.length; x++){
+    var notifyType = req.body[x].type;
+    var typeId = req.body[x].typeId;
+    var status = req.body[x].status;
+
+    /*const promise = addNotify(userId,notifyType,typeId,status);
+    promises.push(promise);
+    */
+
+    console.log("DELETE ",userId,notifyType,typeId,status);
+    const resp =  await addNotify(userId,notifyType,typeId,status);
+    console.log("SUCCESS DELETE: " + resp.success);
+
+
+
+    //console.log(promise);
+
+
+
+
+
+  }
+
+  res.status(200).json({
+    success: true,
+    data: "finished"
+  });
+
+/*
+  Promise.all(promises).then(values => {
+    console.log("beide fertig");
+
+    res.status(200).json({
+      success: true,
+      data: "finished"
+    });
+
+  });
+  */
+
+  console.log();
+
+
+
+
+}
+
+
+function addNotify(userId,notifyType,typeId,status) {
+  return new Promise(resolve => {
+
+    const sql = `UPDATE notifications SET date=CURRENT_TIMESTAMP(), status='${status}' WHERE type_id='${typeId}' AND user_id='${userId}' AND type='${notifyType}'`;
+    console.log(sql);
+    global.conn.query(sql, (error, answ) => {
+      //console.log(answ);
+      if (error) {
+        resolve({success:false, data: error});
+      } else {
+        if (answ.affectedRows === 0) {
+          const sql = `INSERT INTO notifications SET date=CURRENT_TIMESTAMP(), status='${status}', type_id='${typeId}', user_id='${userId}', type='${notifyType}'`;
+
+          global.conn.query(sql, (error, answer) => {
+            if (error) {
+              resolve({success:false, data: error})
+            } else {
+              resolve({success:true, data: answer})
+            }
+          });
+        } else {
+          resolve({success:true, data: answ})
+
+        }
+      }
+    });
+
+  })
+}
+
+
+exports.deleteEventsOld = (req, res) => {
   console.log("del");
+
+
   const { id } = req.params;
-  const sql = `UPDATE notifications SET date=CURRENT_TIMESTAMP(), status='seen' WHERE type_id='${id}' AND user_id = '8d411dc4-e76f-4d0e-a027-056a0bc43be5' AND type = 'event'`;
+  const sql = `UPDATE notifications SET date=CURRENT_TIMESTAMP(), status='seen' WHERE type_id='${id}' AND user_id = 'a1f198b5-09f0-4271-b3b3-89e4a0e655e7' AND type = 'event'`;
   console.log(sql);
   global.conn.query(sql, (error, comment) => {
     console.log(comment);
@@ -109,7 +179,7 @@ exports.deleteEvent = (req, res) => {
       });
     } else {
       if (comment.affectedRows === 0) {
-        const sql = `INSERT INTO notifications SET date=CURRENT_TIMESTAMP(), status='seen', type_id='${id}', user_id = '8d411dc4-e76f-4d0e-a027-056a0bc43be5',type = 'event'`;
+        const sql = `INSERT INTO notifications SET date=CURRENT_TIMESTAMP(), status='seen', type_id='${id}', user_id = 'a1f198b5-09f0-4271-b3b3-89e4a0e655e7',type = 'event'`;
         console.log(sql);
         global.conn.query(sql, (error, comment) => {
           console.log(comment);
