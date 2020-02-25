@@ -13,6 +13,7 @@ const {
 var NodeGeocoder = require("node-geocoder");
 var sortBy = require("array-sort-by");
 
+var dateFormat = require("dateformat");
 exports.notify = async (req, res) => {
   console.log("Get notifications!");
   try {
@@ -236,7 +237,21 @@ exports.notify = async (req, res) => {
         Promise.all(promises).then(() => {
           console.log("FIN");
           sortBy(notifications, s => -new Date(s.notifyCreatedAt));
-          res.json(notifications);
+
+          var notificationsFinal = [];
+          for (var x = 0; x < notifications.length; x++) {
+            //if(today < new Date (poolEvents[x].notifyValidUntil)){
+            var poolEvent = notifications[x];
+            poolEvent.notifyCreatedAt = dateFormat(
+              new Date(notifications[x].notifyCreatedAt),
+              "dd.mm.yyyy h:MM:ss"
+            );
+            notificationsFinal.push(poolEvent);
+            // poolEventsFinal[x].notifyValidUntil = dateFormat(new Date(poolEventsFinal[x].notifyValidUntil), "h:MM:ss dd.mm.yyyy");
+            //}
+          }
+
+          res.json(notificationsFinal);
         });
       });
     }

@@ -29,22 +29,36 @@ exports.getCommentReactions = async userId =>
               return d.getTime() == mostRecentDate.getTime();
             })[0];
           } else {
-            latest = reactions;
+            latest = reactions[0];
           }
-          commented.data[j].notifyParameters = {
-            type: "comment",
-            typeId: commented.data[j].id,
-            commentResponse: "NEW RESPONSE",
-            responseDate: latest.created_at,
-            responseUser: latest.user_id,
-            poolEventName: commented.data[j].poolevent_id,
-            commentDate: commented.data[j].created_at
-          };
+          if (typeof latest.text === "undefined") {
+            commented.data[j].notifyParameters = {
+              type: "comment",
+              typeId: commented.data[j].id,
+              commentResponse: "NEW VOTE",
+              responseDate: latest.created_at,
+              responseUser: latest.full_name,
+              poolEventName: commented.data[j].poolevent_name,
+              commentDate: commented.data[j].created_at
+            };
+            console.log("AddedComment", commented.data[j].id, "VOTE");
+          } else {
+            commented.data[j].notifyParameters = {
+              type: "comment",
+              typeId: commented.data[j].id,
+              commentResponse: "NEW RESPONSE",
+              responseDate: latest.created_at,
+              responseUser: latest.full_name,
+              responseText: latest.text,
+              poolEventName: commented.data[j].poolevent_name,
+              commentDate: commented.data[j].created_at
+            };
+            console.log("AddedComment", commented.data[j].id, "RESPONSE");
+          }
           commented.data[j].created_at = latest.created_at;
           commented.data[j].Microservice = "WAVES.Comment";
 
           filteredComment.push(commented.data[j]);
-          console.log("AddedComment", commented.data[j].id, "RESPONSE");
         }
       }
       console.log("filteredComment");

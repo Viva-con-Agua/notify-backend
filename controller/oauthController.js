@@ -1,14 +1,15 @@
 const Axios = require("axios");
+var NodeGeocoder = require("node-geocoder");
 
 exports.authenticate = async (req, res) => {
   try {
     const { code, state } = req.query;
     console.log(code);
     const s = await fetchToken(code);
-    console.log(s);
+    console.log("S");
 
     const p = await fetchProfile(s.access_token);
-    console.log(p);
+    console.log("p");
 
     var userZip = p.profiles[0].supporter.address[0].zip;
     var userCity = p.profiles[0].supporter.address[0].city;
@@ -54,3 +55,19 @@ const fetchProfile = async access_token => {
 exports.receiveToken = (req, res) => {
   res.json({});
 };
+
+function getLongLat(userZipCity) {
+  return new Promise(resolve => {
+    var options = {
+      provider: "google",
+      httpAdapter: "https", // Default
+      apiKey: process.env.GOOGLE_AUTH,
+      formatter: null // 'gpx', 'string', ...
+    };
+    var geocoder = NodeGeocoder(options);
+    geocoder.geocode(userZipCity).then(function(res) {
+      var longLat = { longitude: res[0].longitude, latitude: res[0].latitude };
+      resolve(longLat);
+    });
+  });
+}

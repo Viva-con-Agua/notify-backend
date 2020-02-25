@@ -47,6 +47,30 @@ exports.getNewEvents = async userGeo =>
           console.log("Added", poolEvent.name, "Necessity");
           poolEvent.chosen = true;
         }
+        if (poolEvent.chosen !== true) {
+          //Awareness Pipeline: Recomendations
+          //Von Suggesty
+          //--------------------------------
+          for (var x = 0; x < recommendedEvents.data.length; x++) {
+            if (poolEvent.id == recommendedEvents.data[x].actionId) {
+              var poolEventFavoriteArtistName =
+                recommendedEvents.data[x].artistName;
+
+              poolEvent.Microservice = "SUGGESTY";
+              poolEvent.notifyParameters = {
+                type: "event",
+                typeId: poolEvent.id,
+                poolEventName: poolEvent.name,
+                poolEventCity: poolEvent.locality,
+                poolEventDate: poolEvent.event_start,
+                poolEventFavoriteArtist: poolEventFavoriteArtistName
+              };
+              filteredEvents.push(poolEvent);
+              console.log("Added ", poolEvent.name, "Suggesty");
+              poolEvent.chosen = true;
+            }
+          }
+        }
 
         if (poolEvent.chosen !== true) {
           //Awareness Pipeline: Distance
@@ -79,31 +103,6 @@ exports.getNewEvents = async userGeo =>
             filteredEvents.push(poolEvent);
             console.log("Added ", poolEvent.name, "Distance");
             poolEvent.chosen = true;
-          }
-        }
-
-        if (poolEvent.chosen !== true) {
-          //Awareness Pipeline: Recomendations
-          //Von Suggesty
-          //--------------------------------
-          for (var x = 0; x < recommendedEvents.data.length; x++) {
-            if (poolEvent.id == recommendedEvents.data[x].actionId) {
-              var poolEventFavoriteArtistName =
-                recommendedEvents.data[x].artistName;
-
-              poolEvent.Microservice = "SUGGESTY";
-              poolEvent.notifyParameters = {
-                type: "event",
-                typeId: poolEvent.id,
-                poolEventName: poolEvent.name,
-                poolEventCity: poolEvent.locality,
-                poolEventDate: poolEvent.event_start,
-                poolEventFavoriteArtist: poolEventFavoriteArtistName
-              };
-              filteredEvents.push(poolEvent);
-              console.log("Added ", poolEvent.name, "Suggesty");
-              poolEvent.chosen = true;
-            }
           }
         }
       });

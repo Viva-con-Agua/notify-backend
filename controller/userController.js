@@ -53,9 +53,11 @@ exports.getUserInformation = async (type, typeId, callback) => {
       var poolEvent = eventData.data;
       console.log(poolEvent);
 
-      //   var users = await fetchUsers();
+      var asp = poolEvent.asp;
 
-      var users = {
+      //   var user = await fetchUser(asp);
+
+      var user = {
         data: [
           {
             name: "Nicola",
@@ -75,85 +77,94 @@ exports.getUserInformation = async (type, typeId, callback) => {
           }
         ]
       };
-      console.log(users.data);
+      console.log(user.data);
 
-      for (var j = 0; j < users.data.length; j++) {
-        // users.data.forEach(user => {
-        users.data[j].chosen = false;
+      // for (var j = 0; j < users.data.length; j++) {
+      //   // users.data.forEach(user => {
+      //   users.data[j].chosen = false;
 
-        //Awareness Pipeline: Recomendations
-        //Von Suggesty
-        //--------------------------------
-        // const recommendedEvents = await fetchRecommendedEvents("code");
-        const recommendedEvents = [];
-        recommendedEvents.data = [];
+      //   //Awareness Pipeline: Recomendations
+      //   //Von Suggesty
+      //   //--------------------------------
+      //   // const recommendedEvents = await fetchRecommendedEvents("code");
+      //   const recommendedEvents = [];
+      //   recommendedEvents.data = [];
 
-        for (var x = 0; x < recommendedEvents.data.length; x++) {
-          if (poolEvent.id == recommendedEvents.data[x].actionId) {
-            var poolEventFavoriteArtistName =
-              recommendedEvents.data[x].artistName;
+      //   for (var x = 0; x < recommendedEvents.data.length; x++) {
+      //     if (poolEvent.id == recommendedEvents.data[x].actionId) {
+      //       var poolEventFavoriteArtistName =
+      //         recommendedEvents.data[x].artistName;
 
-            var userInformation = {
-              userName: users.data[j].name,
-              userMail: users.data[j].email,
-              pooleventName: poolEvent.name,
-              reason: "Recommendation",
-              poolEventFavoriteArtist: poolEventFavoriteArtistName
-            };
-            filteredUsers.push(userInformation);
-            console.log("LOC: ", users.data[j].name);
-            users.data[j].chosen = true;
-          }
-        }
-        //Awareness Pipeline: Distance
-        //Get all Users in 500 km Radius
-        //--------------------------------
-        if (users.data[j].chosen !== true) {
-          var userZip = users.data[j].profiles[0].supporter.address[0].zip;
-          var userCity = users.data[j].profiles[0].supporter.address[0].city;
+      //       var userInformation = {
+      //         userName: users.data[j].name,
+      //         userMail: users.data[j].email,
+      //         pooleventName: poolEvent.name,
+      //         reason: "Recommendation",
+      //         poolEventFavoriteArtist: poolEventFavoriteArtistName
+      //       };
+      //       filteredUsers.push(userInformation);
+      //       console.log("LOC: ", users.data[j].name);
+      //       users.data[j].chosen = true;
+      //     }
+      //   }
+      //   //Awareness Pipeline: Distance
+      //   //Get all Users in 500 km Radius
+      //   //--------------------------------
+      //   if (users.data[j].chosen !== true) {
+      //     var userZip = users.data[j].profiles[0].supporter.address[0].zip;
+      //     var userCity = users.data[j].profiles[0].supporter.address[0].city;
 
-          const result = await getLongLat(userZip + " " + userCity);
-          var userGeo = {
-            latitude: result.latitude,
-            longitude: result.longitude
-          };
-          console.log("User: ", result);
+      //     const result = await getLongLat(userZip + " " + userCity);
+      //     var userGeo = {
+      //       latitude: result.latitude,
+      //       longitude: result.longitude
+      //     };
+      //     console.log("User: ", result);
 
-          if (
-            typeof poolEvent.location.latitude === "undefined" ||
-            typeof poolEvent.location.longitude === "undefined"
-          ) {
-            return true;
-          }
-          var poolEventGeo = {
-            latitude: poolEvent.location.latitude,
-            longitude: poolEvent.location.longitude
-          };
+      //     if (
+      //       typeof poolEvent.location.latitude === "undefined" ||
+      //       typeof poolEvent.location.longitude === "undefined"
+      //     ) {
+      //       return true;
+      //     }
+      //     var poolEventGeo = {
+      //       latitude: poolEvent.location.latitude,
+      //       longitude: poolEvent.location.longitude
+      //     };
 
-          const distance = geolib.getDistance(poolEventGeo, userGeo);
-          const distanceInKm = distance / 1000;
-          console.log(distanceInKm);
-          if (distanceInKm <= 500) {
-            var userInformation = {
-              userName: users.data[j].name,
-              userMail: users.data[j].email,
-              pooleventName: poolEvent.event_name,
-              reason: "Distance",
-              region: poolEvent.location.locality
-            };
-            filteredUsers.push(userInformation);
-            console.log("LOC: ", users.data[j].name);
-            users.data[j].chosen = true;
-          }
-        }
-      }
-    } else if (type === "ChangedEvent") {
-      var filteredUsers = [];
-      console.log("eventData");
+      //     const distance = geolib.getDistance(poolEventGeo, userGeo);
+      //     const distanceInKm = distance / 1000;
+      //     console.log(distanceInKm);
+      //     if (distanceInKm <= 500) {
+      //       var userInformation = {
+      //         userName: users.data[j].name,
+      //         userMail: users.data[j].email,
+      //         pooleventName: poolEvent.event_name,
+      //         reason: "Distance",
+      //         region: poolEvent.location.locality
+      //       };
+      //       filteredUsers.push(userInformation);
+      //       console.log("LOC: ", users.data[j].name);
+      //       users.data[j].chosen = true;
+      //     }
+      //   }
+      // }
+      var userInformation = {
+        userName: user.data[0].name,
+        userMail: user.data[0].email,
+        pooleventName: poolEvent.event_name,
+        reason: "ASP",
+        region: poolEvent.location.locality
+      };
+      callback(null, userInformation);
 
-      var eventData = await fetchEvent(typeId);
-      var poolEvent = eventData.data;
-      console.log(poolEvent);
+      // } else if (type === "ChangedEvent") {
+      //   var filteredUsers = [];
+      //   console.log("eventData");
+
+      //   var eventData = await fetchEvent(typeId);
+      //   var poolEvent = eventData.data;
+      //   console.log(poolEvent);
 
       //Wer is ASP
 
@@ -161,8 +172,6 @@ exports.getUserInformation = async (type, typeId, callback) => {
 
       //Wer Beworben
     }
-
-    callback(null, filteredUsers);
   } catch (error) {
     callback("PROR " + error);
   }
