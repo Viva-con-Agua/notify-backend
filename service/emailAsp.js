@@ -2,17 +2,17 @@ var nodemailer = require("nodemailer");
 
 exports.createAspMail = async result => {
   var transporter = nodemailer.createTransport({
-    host: "mail.gmx.com",
+    host: process.env.MAIL_HOST,
     port: 465,
     secure: true,
     auth: {
-      user: "vivatest@gmx.de",
-      pass: "vivapassword"
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASSWORD
     }
   });
 
   var mailOptions = {
-    from: "vivatest@gmx.de",
+    from: process.env.MAIL_USER,
     to: result.userMail,
     subject: "Du bist ASP in einem poolevent",
     text:
