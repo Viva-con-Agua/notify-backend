@@ -12,7 +12,7 @@ const geolib = require("geolib");
 const var_dump = require("var_dump");
 //var sortBy = require("array-sort-by");
 
-const dateFormat = require("dateFormat");
+const dateFormat = require("dateformat");
 
 function getLongLat(userZipCity) {
   return new Promise(resolve => {

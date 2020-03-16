@@ -1,6 +1,6 @@
 const Axios = require("axios");
 const geolib = require("geolib");
-const dateFormat = require("dateFormat");
+const dateFormat = require("dateformat");
 
 
 exports.getNewEvents = async (userGeo, callback) => {
