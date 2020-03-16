@@ -117,9 +117,12 @@ exports.getNewEvents = async userGeo =>
 
 const fetchEvents = async code => {
   try {
-    const { data } = await Axios.get(
-      `http://localhost:5000/waves/api/v1/poolevent/notify`
-    );
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
+
+    const { data } = await Axios.get(`${waves_api}/poolevent/notify`);
     return data;
   } catch (error) {
     throw error;
@@ -128,8 +131,12 @@ const fetchEvents = async code => {
 
 const fetchRecommendedEvents = async code => {
   try {
+    const suggesty_api =
+      process.env.ENV === "dev"
+        ? process.env.SUGGESTY_API_DEV
+        : process.env.SUGGESTY_API_PRODUCTION;
     const { data } = await Axios.get(
-      `http://localhost:5001/suggesty/api/v1/spotify/suggestion/user/a1f198b5-09f0-4271-b3b3-89e4a0e655e7`
+      `${suggesty_api}/spotify/suggestion/user/a1f198b5-09f0-4271-b3b3-89e4a0e655e7`
     );
 
     return data;

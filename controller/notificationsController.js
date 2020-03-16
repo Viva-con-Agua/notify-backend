@@ -278,9 +278,13 @@ function getLongLat(userZipCity) {
 
 const fetchProfile = async access_token => {
   try {
+    const oauth =
+      process.env.ENV === "dev"
+        ? process.env.OAUTH_DEV
+        : process.env.OAUTH_PRODUCTION;
+    console.log(oauth);
     const { data } = await Axios.get(
-      "https://stage.vivaconagua.org/drops/oauth2/rest/profile?access_token=" +
-        access_token
+      `${oauth}/drops/oauth2/rest/profile?access_token=` + access_token
     );
 
     return data;

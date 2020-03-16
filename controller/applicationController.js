@@ -115,8 +115,12 @@ exports.getApplicationsAndNews = async userId =>
 
 const fetchApplications = async config => {
   try {
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
     const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/application/user/" + config,
+      `${waves_api}/application/user/` + config,
       config
     );
     return data;
@@ -127,8 +131,12 @@ const fetchApplications = async config => {
 
 const fetchFavorites = async config => {
   try {
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
     const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/favorite/user/" + config,
+      `${waves_api}/favorite/user/` + config,
       config
     );
     return data;
@@ -139,9 +147,11 @@ const fetchFavorites = async config => {
 
 const fetchComments = async event => {
   try {
-    const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/comment/" + event
-    );
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
+    const { data } = await Axios.get(`${waves_api}/comment/` + event);
     return data;
   } catch (error) {
     throw error;
@@ -150,9 +160,11 @@ const fetchComments = async event => {
 
 const fetchEvent = async event => {
   try {
-    const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/poolevent/notify/" + event
-    );
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
+    const { data } = await Axios.get(`${waves_api}/poolevent/notify/` + event);
     return data;
   } catch (error) {
     throw error;

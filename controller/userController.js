@@ -179,19 +179,25 @@ exports.getUserInformation = async (type, typeId, callback) => {
 
 const fetchApplication = async id => {
   try {
-    const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/application/" + id
-    );
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
+    const { data } = await Axios.get(`${waves_api}/application/` + id);
     return data;
   } catch (error) {
     throw error;
   }
 };
 
-const fetchProfile = async id => {
+const fetchProfile = async access_token => {
   try {
+    const oauth =
+      process.env.ENV === "dev"
+        ? process.env.OAUTH_DEV
+        : process.env.OAUTH_PRODUCTION;
     const { data } = await Axios.get(
-      "https://stage.vivaconagua.org/drops/oauth2/rest/profile?id=" + id
+      `${oauth}/drops/oauth2/rest/profile?access_token=` + access_token
     );
 
     return data;
@@ -202,37 +208,11 @@ const fetchProfile = async id => {
 
 const fetchEvent = async event => {
   try {
-    const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/poolevent/" + event
-    );
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-function getLongLat(userZipCity) {
-  return new Promise(resolve => {
-    var options = {
-      provider: "google",
-      httpAdapter: "https", // Default
-      apiKey: process.env.GOOGLE_AUTH,
-      formatter: null // 'gpx', 'string', ...
-    };
-    var geocoder = NodeGeocoder(options);
-    geocoder.geocode(userZipCity).then(function(res) {
-      var longLat = { longitude: res[0].longitude, latitude: res[0].latitude };
-      resolve(longLat);
-    });
-  });
-}
-
-const fetchRecommendedEvents = async code => {
-  try {
-    const { data } = await Axios.get(
-      `http://localhost:5001/suggesty/api/v1/spotify/suggestion/user/a1f198b5-09f0-4271-b3b3-89e4a0e655e7`
-    );
-
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
+    const { data } = await Axios.get(`${waves_api}/poolevent/` + event);
     return data;
   } catch (error) {
     throw error;
