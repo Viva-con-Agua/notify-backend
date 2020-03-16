@@ -383,8 +383,22 @@ exports.authenticate = async (req, res) => {
 
 const fetchToken = async code => {
   try {
+    isDev = process.env.ENV === "dev";
+    authUrlDev = process.env.OAUTH_DEV;
+    authUrlProduction = process.env.OAUTH_PRODUCTION;
+    clientIdDev = process.env.CLIENT_ID_DEV;
+    clientIdProduction = process.env.CLIENT_ID_PRODUCTION;
+    redirectDev = process.env.REDIRECT_DEV;
+    redirectProduction = process.env.REDIRECT_PRODUCTION;
+    frontendDev = process.env.FRONTEND_DEV;
+    frontendProduction = process.env.FRONTEND_PRODUCTION;
     const { data } = await Axios.get(
-      `https://stage.vivaconagua.org/drops/oauth2/access_token?grant_type=authorization_code&client_id=notify&code=${code}&redirect_uri=http://localhost:8005/v1/events/oauth`
+      // `https://stage.vivaconagua.org/drops/oauth2/access_token?grant_type=authorization_code&client_id=notify&code=${code}&redirect_uri=http://localhost:8005/v1/events/oauth`
+      `${
+        isDev ? authUrlDev : authUrlProduction
+      }/drops/oauth2/access_token?grant_type=authorization_code&client_id=${
+        isDev ? clientIdDev : clientIdProduction
+      }&code=${code}&redirect_uri=${isDev ? redirectDev : redirectProduction}`
     );
     return data;
   } catch (error) {
@@ -394,9 +408,12 @@ const fetchToken = async code => {
 
 const fetchProfile = async access_token => {
   try {
+    const oauth =
+      process.env.ENV === "dev"
+        ? process.env.OAUTH_DEV
+        : process.env.OAUTH_PRODUCTION;
     const { data } = await Axios.get(
-      "https://stage.vivaconagua.org/drops/oauth2/rest/profile?access_token=" +
-        access_token
+      `${oauth}/drops/oauth2/rest/profile?access_token=` + access_token
     );
 
     return data;

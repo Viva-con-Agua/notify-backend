@@ -54,9 +54,11 @@ exports.getCommentReactions = async (userId, callback) => {
 
 const fetchUserComments = async user => {
   try {
-    const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/comment/user/" + user
-    );
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
+    const { data } = await Axios.get(`${waves_api}/comment/user/` + user);
     return data;
   } catch (error) {
     throw error;
@@ -65,9 +67,11 @@ const fetchUserComments = async user => {
 
 const fetchVotes = async comment => {
   try {
-    const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/vote/" + comment
-    );
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
+    const { data } = await Axios.get(`${waves_api}/vote/` + comment);
     return data;
   } catch (error) {
     throw error;
@@ -76,8 +80,12 @@ const fetchVotes = async comment => {
 
 const fetchResponses = async comment => {
   try {
+    const waves_api =
+      process.env.ENV === "dev"
+        ? process.env.WAVES_API_DEV
+        : process.env.WAVES_API_PRODUCTION;
     const { data } = await Axios.get(
-      "http://localhost:5000/waves/api/v1/comment/response/" + comment
+      `${waves_api}/comment/response/` + comment
     );
     return data;
   } catch (error) {
