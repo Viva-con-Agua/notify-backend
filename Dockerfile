@@ -6,4 +6,4 @@ RUN npm install
 
 EXPOSE 5000
 
-RUN npm start
+CMD npm start

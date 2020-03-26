@@ -1,6 +1,6 @@
 const { connectMysql } = require("./config/connectMysql");
 
-const natsSubscribtion = require("./service/natsSubscribtion.js");
+// const natsSubscribtion = require("./service/natsSubscribtion.js");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const morgan = require("morgan")("dev");
@@ -40,4 +40,4 @@ server.listen(port, () => {
   );
 });
 
-natsSubscribtion();
+// natsSubscribtion();
