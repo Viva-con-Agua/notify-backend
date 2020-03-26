@@ -5,13 +5,11 @@ const { verify } = require("../middelware/tokenChecker");
 const {
   getNotificationsByVcaId,
   deleteEvents
-} = require("../controller/databaseController");
+} = require("../controller/notifyController");
 
-const { authenticate } = require("../controller/oauthController");
+const { authenticate, notify } = require("../controller/oauthController");
 
 router.route("/").delete(deleteEvents);
-
-const { notify } = require("../controller/notificationsController");
 
 router.route("/user/:vcaId").get(getNotificationsByVcaId);
 
