@@ -1,5 +1,6 @@
 const { connectMysql } = require("./config/connectMysql");
 
+// const natsSubscribtion = require("./service/natsSubscribtion.js");
 const eventEmitter = require("./service/eventEmitter");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
@@ -39,3 +40,5 @@ server.listen(port, () => {
     `App running in ${process.env.NODE_ENV} mode on port ${port}`.green.bold
   );
 });
+
+// natsSubscribtion();

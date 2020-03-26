@@ -1,0 +1,22 @@
+version: '3'
+services:
+  notify-backend:
+    image: vivaconagua/notify-backend:stage
+    build: .
+    env_file:
+      - config/.env
+    container_name: notify-backend
+    restart: unless-stopped
+    links: 
+        - notify-database:db
+    environment:
+        - HOST=notify-database
+  notify-database:
+    image: mysql
+    container_name: notify-database
+    environment:
+      - MYSQL_DATABASE=notifydb
+      - MYSQL_USER=notify
+      - MYSQL_PASSWORD=notify
+      - MYSQL_ROOT_PASSWORD=notify
+
