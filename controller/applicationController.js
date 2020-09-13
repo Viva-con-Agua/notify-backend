@@ -1,16 +1,17 @@
 const Axios = require("axios");
 
-exports.getApplicationsAndNews = async userId =>
+exports.getApplicationsAndNews = async (userId) =>
   new Promise(async (resolve, reject) => {
     try {
       console.log("Get new application changes!");
 
+      console.log(userId);
       var applications = await fetchApplications(userId);
       // console.log(applications);
       var filteredApplications = [];
       var eventsOfInterest = [];
 
-      applications.data.forEach(application => {
+      applications.data.forEach((application) => {
         if (
           application.state === "ACCEPTED" ||
           application.state === "REJECTED"
@@ -21,7 +22,7 @@ exports.getApplicationsAndNews = async userId =>
             typeId: application.id,
             poolEventName: application.poolevent_id,
             applicationState: application.state,
-            applicationDate: application.created_at
+            applicationDate: application.created_at,
           };
           filteredApplications.push(application);
           console.log("AddedApplication ", application.poolevent_id);
@@ -37,12 +38,12 @@ exports.getApplicationsAndNews = async userId =>
         }
       });
 
-      var favorites = await fetchFavorites(userId);
-      // var_dump(favorites);
-      favorites.data.forEach(favorite => {
-        eventsOfInterest.push(favorite.poolevent_id);
-        console.log("To EventsOfInterest ", favorite.poolevent_id, "FAVORITE");
-      });
+      // var favorites = await fetchFavorites(userId);
+      // // var_dump(favorites);
+      // favorites.data.forEach(favorite => {
+      //   eventsOfInterest.push(favorite.poolevent_id);
+      //   console.log("To EventsOfInterest ", favorite.poolevent_id, "FAVORITE");
+      // });
 
       //   var organized = await fetchAsps(userId);
       //   organized.data.forEach(organize => {
@@ -53,6 +54,7 @@ exports.getApplicationsAndNews = async userId =>
       var filteredNews = [];
 
       for (var j = 0; j < eventsOfInterest.length; j++) {
+        console.log(eventsOfInterest[j]);
         const event = await fetchEvent(eventsOfInterest[j]);
         const comments = await fetchComments(eventsOfInterest[j]);
 
@@ -61,12 +63,12 @@ exports.getApplicationsAndNews = async userId =>
             var mostRecentDate = new Date(
               Math.max.apply(
                 null,
-                comments.data.map(e => {
+                comments.data.map((e) => {
                   return new Date(e.created_at);
                 })
               )
             );
-            var latest = comments.data.filter(e => {
+            var latest = comments.data.filter((e) => {
               var d = new Date(e.created_at);
               return d.getTime() == mostRecentDate.getTime();
             })[0];
@@ -81,7 +83,7 @@ exports.getApplicationsAndNews = async userId =>
                 typeId: event.data[0].id,
                 newsType: "CHANGE",
                 newsDate: event.data[0].edited_at,
-                poolEventName: event.data[0].name
+                poolEventName: event.data[0].name,
               };
               event.data[0].created_at = event.data[0].edited_at;
               event.data[0].Microservice = "WAVES.News";
@@ -95,7 +97,7 @@ exports.getApplicationsAndNews = async userId =>
               typeId: event.data[0].id,
               newsType: "NEW COMMENT",
               newsDate: latest.created_at,
-              poolEventName: event.data[0].name
+              poolEventName: event.data[0].name,
             };
             event.data[0].created_at = latest.created_at;
             event.data[0].Microservice = "WAVES.News";
@@ -109,11 +111,12 @@ exports.getApplicationsAndNews = async userId =>
 
       resolve([filteredApplications, filteredNews]);
     } catch (error) {
-      reject(error);
+      e = new Error("Connection to Application Database not possible");
+      return e;
     }
   });
 
-const fetchApplications = async config => {
+const fetchApplications = async (config) => {
   try {
     const waves_api =
       process.env.ENV === "dev"
@@ -125,11 +128,11 @@ const fetchApplications = async config => {
     );
     return data;
   } catch (error) {
-    throw error;
+    return Promise.reject(error);
   }
 };
 
-const fetchFavorites = async config => {
+const fetchFavorites = async (config) => {
   try {
     const waves_api =
       process.env.ENV === "dev"
@@ -141,11 +144,11 @@ const fetchFavorites = async config => {
     );
     return data;
   } catch (error) {
-    throw error;
+    return Promise.reject(error);
   }
 };
 
-const fetchComments = async event => {
+const fetchComments = async (event) => {
   try {
     const waves_api =
       process.env.ENV === "dev"
@@ -154,11 +157,11 @@ const fetchComments = async event => {
     const { data } = await Axios.get(`${waves_api}/comment/` + event);
     return data;
   } catch (error) {
-    throw error;
+    return Promise.reject(error);
   }
 };
 
-const fetchEvent = async event => {
+const fetchEvent = async (event) => {
   try {
     const waves_api =
       process.env.ENV === "dev"
@@ -167,6 +170,6 @@ const fetchEvent = async event => {
     const { data } = await Axios.get(`${waves_api}/poolevent/notify/` + event);
     return data;
   } catch (error) {
-    throw error;
+    return Promise.reject(error);
   }
 };

@@ -6,10 +6,10 @@ exports.authenticate = async (req, res) => {
     const { code, state } = req.query;
     console.log(code);
     const s = await fetchToken(code);
-    console.log("S");
+    console.log("access_token fetched: " + s.access_token);
 
     const p = await fetchProfile(s.access_token);
-    console.log("p");
+    console.log("profile fetched from: " + p.profiles[0].supporter.fullName);
 
     var userZip = p.profiles[0].supporter.address[0].zip;
     var userCity = p.profiles[0].supporter.address[0].city;
@@ -19,16 +19,21 @@ exports.authenticate = async (req, res) => {
     res.cookie("latitude", result.latitude);
     res.cookie("user_zip", p.profiles[0].supporter.address[0].zip);
     res.cookie("user_id", p.id);
-    res.cookie("access_token", s.access_token).redirect(state);
+    res.cookie("user_name", p.profiles[0].supporter.fullName);
+    var date = new Date();
+    date.setTime(date.getTime() + 10 * 60 * 1000);
+    res
+      .cookie("access_token", s.access_token, { expires: date })
+      .redirect(state);
   } catch (error) {
     res.status(400).json({
       success: false,
-      error: error
+      error: error,
     });
   }
 };
 
-const fetchToken = async code => {
+const fetchToken = async (code) => {
   try {
     isDev = process.env.ENV === "dev";
     authUrlDev = process.env.OAUTH_DEV;
@@ -53,7 +58,7 @@ const fetchToken = async code => {
   }
 };
 
-const fetchProfile = async access_token => {
+const fetchProfile = async (access_token) => {
   try {
     const oauth =
       process.env.ENV === "dev"
@@ -74,17 +79,38 @@ exports.receiveToken = (req, res) => {
 };
 
 function getLongLat(userZipCity) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
+    console.log(userZipCity);
+
+    // var options = {
+    //   provider: "google",
+    //   httpAdapter: "https", // Default
+    //   apiKey: process.env.GOOGLE_AUTH,
+    //   formatter: null // 'gpx', 'string', ...
+    // };
+
     var options = {
-      provider: "google",
-      httpAdapter: "https", // Default
-      apiKey: process.env.GOOGLE_AUTH,
-      formatter: null // 'gpx', 'string', ...
+      provider: "opencage",
+      httpAdapter: "https",
+      apiKey: "68abc0e17ce54ede8b5ea7d267c34112",
+      formatter: null,
     };
+
     var geocoder = NodeGeocoder(options);
-    geocoder.geocode(userZipCity).then(function(res) {
-      var longLat = { longitude: res[0].longitude, latitude: res[0].latitude };
-      resolve(longLat);
-    });
+    geocoder
+      .geocode(userZipCity)
+      .then(function (res) {
+        // console.log(res);
+
+        var longLat = {
+          longitude: res[0].longitude,
+          latitude: res[0].latitude,
+        };
+        console.log(longLat);
+        resolve(longLat);
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
   });
 }

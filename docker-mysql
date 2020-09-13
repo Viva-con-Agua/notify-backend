@@ -20,16 +20,19 @@ services:
     depends_on:
       - nats
 
+
   notify-database:
-    image: mongo
+    image: mysql
     container_name: notify-database
     networks:
       - vca-net
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=notify
-      - MONGO_INITDB_ROOT_PASSWORD=notify
+      - MYSQL_DATABASE=notifydb
+      - MYSQL_USER=notify
+      - MYSQL_PASSWORD=notify
+      - MYSQL_ROOT_PASSWORD=notify
     ports:
-      - "27017:27017"
+      - "3307:3306"
     volumes:
       - ./config/db_dump:/docker-entrypoint-initdb.d
 
@@ -47,5 +50,3 @@ services:
 networks:
   vca-net:
     driver: bridge
-
-

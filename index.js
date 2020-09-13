@@ -1,6 +1,12 @@
-const { connectMysql } = require("./config/connectMysql");
+// const { connectMysql } = require("./config/connectMysql");
+const { connectMongo } = require("./config/connectMongo");
 
-// const natsSubscribtion = require("./service/natsSubscribtion.js");
+// mongoUtil.connectToServer(function (err, client) {
+//   if (err) console.log(err);
+//   // start the rest of your app here
+// });
+
+const initSubscriber = require("./service/natsSubscribtion.js");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const morgan = require("morgan")("dev");
@@ -27,10 +33,11 @@ if (process.env.NODE_ENV == "dev") {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
-connectMysql();
+connectMongo();
 app.use(cors());
 
 app.use("/v1/events", notify);
+console.log("HHH");
 
 const port = process.env.PORT || 8005;
 
@@ -40,4 +47,5 @@ server.listen(port, () => {
   );
 });
 
-// natsSubscribtion();
+initSubscriber();
+console.log("sub");

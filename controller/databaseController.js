@@ -1,5 +1,3 @@
-const var_dump = require("var_dump");
-
 // @desc get poolevent by id
 // @route GET /api/v1/:id
 // @access Public
@@ -9,13 +7,15 @@ exports.getNotificationsByVcaId = (req, res) => {
   if (true) {
     res.status(200).json({
       success: true,
-      data: vcaId
+      data: vcaId,
     });
   }
 };
 
 exports.getStatus = (type, userId, pooleventId) =>
   new Promise((resolve, reject) => {
+    console.log("sql");
+
     const sql = `SELECT status
                 FROM notifications
                 WHERE type_id='${pooleventId}' AND user_id = '${userId}' AND type = '${type}';`;
@@ -70,7 +70,7 @@ exports.deleteEvent = (req, res) => {
     if (error) {
       res.status(400).json({
         success: false,
-        message: `Error in deletefavorite ${error.message}`
+        message: `Error in deletefavorite ${error.message}`,
       });
     } else {
       if (comment.affectedRows === 0) {
@@ -82,19 +82,19 @@ exports.deleteEvent = (req, res) => {
           if (error) {
             res.status(400).json({
               success: false,
-              message: `Error in deletefavorite ${error.message}`
+              message: `Error in deletefavorite ${error.message}`,
             });
           } else {
             res.status(200).json({
               success: true,
-              data: comment
+              data: comment,
             });
           }
         });
       } else {
         res.status(200).json({
           success: true,
-          data: comment
+          data: comment,
         });
       }
     }
@@ -128,7 +128,7 @@ exports.deleteEvents = async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: "finished"
+    data: "finished",
   });
 
   /*
@@ -144,7 +144,7 @@ exports.deleteEvents = async (req, res) => {
 };
 
 function addNotify(userId, notifyType, typeId, status) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const sql = `UPDATE notifications SET date=CURRENT_TIMESTAMP(), status='${status}' WHERE type_id='${typeId}' AND user_id='${userId}' AND type='${notifyType}'`;
     console.log(sql);
     global.conn.query(sql, (error, answ) => {
@@ -181,7 +181,7 @@ exports.deleteEventsOld = (req, res) => {
     if (error) {
       res.status(400).json({
         success: false,
-        message: `Error in deletefavorite ${error.message}`
+        message: `Error in deletefavorite ${error.message}`,
       });
     } else {
       if (comment.affectedRows === 0) {
@@ -193,19 +193,19 @@ exports.deleteEventsOld = (req, res) => {
           if (error) {
             res.status(400).json({
               success: false,
-              message: `Error in deletefavorite ${error.message}`
+              message: `Error in deletefavorite ${error.message}`,
             });
           } else {
             res.status(200).json({
               success: true,
-              data: comment
+              data: comment,
             });
           }
         });
       } else {
         res.status(200).json({
           success: true,
-          data: comment
+          data: comment,
         });
       }
     }
