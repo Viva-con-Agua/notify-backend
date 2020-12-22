@@ -115,7 +115,20 @@ If you want a example configuration, in config sql-dumps is one for WAVES as an 
 
 - start the waves-backend https://github.com/Viva-con-Agua/waves-backend from branch Nicola and load the sql_dump there
 
-## Set up user
+## Configure user
+
+You can change over which APIs each user can recieve notifications as well as which notificiation pipelines he is subscribed to by using the
+POST /user route.
+
+# Workflow
+
+## update workflow
+
+![alt text](./assets/update-workflow.png)
+
+## widget workflow
+
+![alt text](./assets/website-workflow.png)
 
 ### NATS Subscribtions
 
@@ -173,3 +186,4 @@ user: $user_id
 -> change notification status for chosen user in collection 'user_notifications'
 
 POST /updateUser
+-> change user data
