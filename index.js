@@ -11,7 +11,7 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const morgan = require("morgan")("dev");
 const express = require("express");
-const notify = require("./routes/notify");
+const routes = require("./routes/routes");
 const socket = require("./socket");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -36,16 +36,14 @@ app.use(cookieParser());
 connectMongo();
 app.use(cors());
 
-app.use("/v1/events", notify);
-console.log("HHH");
+app.use("/api/v1", routes);
 
 const port = process.env.PORT || 8005;
 
 server.listen(port, () => {
   console.log(
-    `App running in ${process.env.NODE_ENV} mode on port ${port}`.green.bold
+    `App running in ${process.env.ENV} mode on port ${port}`.green.bold
   );
 });
 
 initSubscriber();
-console.log("sub");

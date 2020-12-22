@@ -1,13 +1,22 @@
 const NATS = require("nats");
-const { getUserInformation } = require("../controller/userController.js");
-const { createApplicationMail } = require("../service/emailApplication.js");
-const { createAspMail } = require("../service/emailAsp.js");
+const { update } = require("../controller/updateDatabaseController.js");
+const { sendOutNotifications } = require("../controller/thirdPartyController");
+
+function getTimeLeft(timeout) {
+  return Math.ceil(
+    (timeout._idleStart + timeout._idleTimeout - Date.now()) / 1000
+  );
+}
 
 const initSubscriber = () => {
   console.log("init");
   try {
     console.log(process.env.NATS_URI);
     const nc = NATS.connect(process.env.NATS_URI);
+
+    var api_count = 3;
+
+    var timer = new Array(api_count).fill(0);
 
     // Simple Subscriber
     // nc.subscribe("*", function(msg) {
@@ -18,66 +27,39 @@ const initSubscriber = () => {
     //   console.log("Received a message: " + msg);
     // });
 
-    nc.subscribe("application.edit", function (msg) {
-      console.log("application with id: " + msg + " changed");
-      getUserInformation("Application", msg, (error, result) => {
-        if (error) {
-          console.log(error);
-        }
-        if (result) {
-          console.log(result);
+    nc.subscribe("notification", function (msg) {
+      console.log("new updates from: " + msg);
+      update(msg);
 
-          createApplicationMail(result);
+      for (let j = 1; j < api_count; j++) {
+        console.log(getTimeLeft(timer[j]));
+
+        if (timer[j] == 0) {
+          global.conn
+            .collection("apis")
+            .find({})
+            .toArray()
+            .then(function (apis) {
+              console.log("apis gefunden: ");
+              console.log(apis.length);
+
+              for (let i = 0; i < apis.length; i++) {
+                console.log(apis[i].name + " timer: " + apis[i].timer);
+
+                timer[j] = setTimeout(() => {
+                  // console.log(i);
+                  // console.log(apis[i]);
+
+                  sendOutNotifications(apis[i].name);
+                }, apis[i].timer);
+              }
+            })
+            .catch((e) => {
+              console.log(e);
+            });
         }
-      });
+      }
     });
-
-    nc.subscribe("poolevent.get", function (msg) {
-      console.log("New Event with id: " + msg);
-
-      getUserInformation("NewEvent", msg, (error, result) => {
-        if (error) {
-          console.log(error);
-        }
-        if (result) {
-          console.log(result);
-
-          createAspMail(result);
-        }
-      });
-    });
-
-    // nc.subscribe("poolevent.edit", function(msg) {
-    //   console.log("Event with id: " + msg + " changed");
-
-    //   getUserInformation("ChangedEvent", msg, (error, result) => {
-    //     if (error) {
-    //       console.log(error);
-    //     }
-    //     if (result) {
-    //       console.log(result);
-
-    //       result.forEach(res => {
-    //         var mailOptions = {
-    //           from: "vivatest@gmx.de",
-    //           to: res.userMail,
-    //           subject: "Poolevent " + res.pooleventName + "changed",
-    //           text: "There were some changes in Poolevent " + res.pooleventName
-    //         };
-
-    //         console.log(mailOptions);
-
-    //         transporter.sendMail(mailOptions, function(error, info) {
-    //           if (error) {
-    //             console.log(error);
-    //           } else {
-    //             console.log("Email sent: " + info.response);
-    //           }
-    //         });
-    //       });
-    //     }
-    //   });
-    // });
   } catch (error) {
     console.log(`error in initSubscriber ${error.message}`);
   }

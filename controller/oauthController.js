@@ -1,31 +1,105 @@
 const Axios = require("axios");
-var NodeGeocoder = require("node-geocoder");
 
 exports.authenticate = async (req, res) => {
   try {
-    const { code, state } = req.query;
-    console.log(code);
-    const s = await fetchToken(code);
-    console.log("access_token fetched: " + s.access_token);
+    // const { code, state } = req.query;
+    console.log("oauth");
 
-    const p = await fetchProfile(s.access_token);
-    console.log("profile fetched from: " + p.profiles[0].supporter.fullName);
+    var p = await Axios.post("http://localhost:1323/v1/auth/signin", {
+      email: "dennis_kleber@mailbox.org",
+      password: "testtest",
+      service: "drops-backend",
+    });
 
-    var userZip = p.profiles[0].supporter.address[0].zip;
-    var userCity = p.profiles[0].supporter.address[0].city;
-    const result = await getLongLat(userZip + " " + userCity);
+    console.log(p.data);
 
-    res.cookie("longitude", result.longitude);
-    res.cookie("latitude", result.latitude);
-    res.cookie("user_zip", p.profiles[0].supporter.address[0].zip);
-    res.cookie("user_id", p.id);
-    res.cookie("user_name", p.profiles[0].supporter.fullName);
+    // const s = await fetchToken(code);
+    // console.log("access_token fetched: " + s.access_token);
+
+    // const p = await fetchProfile(s.access_token);
+    // console.log("profile fetched from: " + p.profiles[0].supporter.fullName);
+    // var obj = { name: 'event', notifytype: 'action' };
+
+    // await global.conn.collection("microservices").updateOne(
+    //   { name: 'waves' },
+    //   {
+    //     $set: {
+    //       name: 'waves',
+    //       api: 'http://localhost:5000/waves/api/v1/notifications',
+    //       types: obj,
+    //     },
+    //   },
+    //   { upsert: true },
+    //   function (err, res) {
+    //     if (err) throw err;
+    //     console.log("Number of documents inserted: " + res.insertedCount);
+    //     console.log("Number of documents updated: " + res.result.nModified);
+    //     console.log("Number of documents matched: " + res.result.nMatched);
+    //     console.log("Number of documents upserted: " + res.result.nUpserted);
+    //   }
+    // );
+    p = p.data.additional.profile;
+
+    // global.conn
+    //   .collection("user")
+    //   .insertOne({
+    //     id: p.uuid,
+    //     full_name: p.full_name,
+    //     address: [{
+    //               zip: '10365',
+    //               city: 'berlin'
+    //             }],
+    //     invested: [458, 469, 461, 459],
+    //     crew: ["berlin", "hamburg"],
+    //     filter: { Crew: true, Location: true }
+    //   }, function (err, res) {
+    //     if (err) throw err;
+
+    //     console.log("Number of documents Inserted: " + res.nInserted);
+
+    //   });
+    var s = {
+      access_token: "1234",
+    };
+
+    await global.conn.collection("user").updateOne(
+      { id: p.uuid },
+      {
+        $setOnInsert: {
+          id: p.uuid,
+          full_name: p.full_name,
+          address: [
+            {
+              zip: "10365",
+              city: "berlin",
+            },
+          ],
+          invested: [458, 469, 461, 459],
+          crew: ["berlin", "hamburg"],
+          filter: [],
+          email: [],
+          access_token: s.access_token,
+        },
+      },
+      { upsert: true },
+      function (err, res) {
+        if (err) throw err;
+        console.log("New user: " + res.upsertedCount);
+        console.log("User already in database: " + res.matchedCount);
+      }
+    );
+
+    var state = "http://localhost:8080/";
+
+    res.cookie("user_id", p.uuid);
+    res.cookie("user_name", p.full_name);
     var date = new Date();
     date.setTime(date.getTime() + 10 * 60 * 1000);
     res
       .cookie("access_token", s.access_token, { expires: date })
       .redirect(state);
   } catch (error) {
+    console.log(error);
     res.status(400).json({
       success: false,
       error: error,
@@ -77,40 +151,3 @@ const fetchProfile = async (access_token) => {
 exports.receiveToken = (req, res) => {
   res.json({});
 };
-
-function getLongLat(userZipCity) {
-  return new Promise((resolve) => {
-    console.log(userZipCity);
-
-    // var options = {
-    //   provider: "google",
-    //   httpAdapter: "https", // Default
-    //   apiKey: process.env.GOOGLE_AUTH,
-    //   formatter: null // 'gpx', 'string', ...
-    // };
-
-    var options = {
-      provider: "opencage",
-      httpAdapter: "https",
-      apiKey: "68abc0e17ce54ede8b5ea7d267c34112",
-      formatter: null,
-    };
-
-    var geocoder = NodeGeocoder(options);
-    geocoder
-      .geocode(userZipCity)
-      .then(function (res) {
-        // console.log(res);
-
-        var longLat = {
-          longitude: res[0].longitude,
-          latitude: res[0].latitude,
-        };
-        console.log(longLat);
-        resolve(longLat);
-      })
-      .catch(function (err) {
-        console.log(err);
-      });
-  });
-}
