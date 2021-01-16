@@ -3,7 +3,7 @@ const Axios = require("axios");
 exports.getCommentReactions = async (userId, callback) => {
   // new Promise((resolve, reject) => {
   try {
-    console.log("Get new comment-reactions!");
+    //console.log("Get new comment-reactions!");
 
     var filteredComment = [];
     var commented = await fetchUserComments(userId);
@@ -43,7 +43,7 @@ exports.getCommentReactions = async (userId, callback) => {
         commented.data[j].Microservice = "WAVES.Comment";
 
         filteredComment.push(commented.data[j]);
-        console.log("REACT : ", commented.data[j].id);
+        //console.log("REACT : ", commented.data[j].id);
       }
     }
     return filteredComment;

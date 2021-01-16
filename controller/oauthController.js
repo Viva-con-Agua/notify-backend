@@ -4,8 +4,8 @@ const {
   getLastSeen,
   updateLastSeen
 } = require("../controller/notifyController");
-const { getNewEvents } = require("../controller/eventController");
-const { getCommentReactions } = require("../controller/commentController");
+const {getNewEvents} = require("../controller/eventController");
+const {getCommentReactions} = require("../controller/commentController");
 
 var NodeGeocoder = require("node-geocoder");
 const geolib = require("geolib");
@@ -23,8 +23,8 @@ function getLongLat(userZipCity) {
       formatter: null // 'gpx', 'string', ...
     };
     var geocoder = NodeGeocoder(options);
-    geocoder.geocode(userZipCity).then(function(res) {
-      var longLat = { longitude: res[0].longitude, latitude: res[0].latitude };
+    geocoder.geocode(userZipCity).then(function (res) {
+      var longLat = {longitude: res[0].longitude, latitude: res[0].latitude};
       resolve(longLat);
     });
   });
@@ -57,7 +57,11 @@ exports.notify = async (req, res) => {
 
       //First step: Get interesting new Events for user
       //-----------------------------------------------
-      var filteredEvents = await getNewEvents(userGeo);
+      var filteredEventsReturn = await getNewEvents(userGeo);
+      var filteredEvents = filteredEventsReturn.filteredEvents;
+      //console.log(filteredEvents);
+      var filteredEventsSec = filteredEventsReturn.filteredEventsSec;
+      //console.log(filteredEventsSec);
 
       // var_dump(filteredEvents);
 
@@ -70,6 +74,9 @@ exports.notify = async (req, res) => {
       // };
       // var_dump(config);
 
+
+
+/* entfernt
       var applications = await fetchApplications(userId);
       // var_dump(applications);
       var filteredApplications = [];
@@ -166,13 +173,15 @@ exports.notify = async (req, res) => {
           }
         }
       }
-
+*/
       //Check with Database (What has user already seen)
       //------------------------------------------------
 
       var poolEventStatus;
       var promises = [];
       var poolEventLastSeen;
+
+      /* entfernt
 
       filteredApplications.forEach(application => {
         var promise = getStatus("application", userId, application.id).then(
@@ -191,7 +200,7 @@ exports.notify = async (req, res) => {
             var notify = {
               notifyMicroservice: application.Microservice,
               notifyCreatedAt: application.created_at,
-              notifyLink: "#",
+              notifyPrimaryActionLink: "#",
               notifyStatus: poolEventStatus,
               notifyParameters: application.notifyParameters,
               notifyType: "DATE"
@@ -233,7 +242,7 @@ exports.notify = async (req, res) => {
               var notify = {
                 notifyMicroservice: comment.Microservice,
                 notifyCreatedAt: comment.created_at,
-                notifyLink: "#",
+                notifyPrimaryActionLink: "#",
                 notifyStatus: poolEventStatus,
                 notifyParameters: comment.notifyParameters,
                 notifyType: "MESSAGE"
@@ -283,7 +292,7 @@ exports.notify = async (req, res) => {
               var notify = {
                 notifyMicroservice: news.Microservice,
                 notifyCreatedAt: news.created_at,
-                notifyLink: "#",
+                notifyPrimaryActionLink: "",
                 notifyStatus: poolEventStatus,
                 notifyParameters: news.notifyParameters,
                 notifyType: "MESSAGE"
@@ -295,6 +304,7 @@ exports.notify = async (req, res) => {
         );
         promises.push(promise);
       });
+ */
 
       filteredEvents.forEach(poolEvent => {
         var promise = getStatus("event", userId, poolEvent.id).then(
@@ -313,11 +323,12 @@ exports.notify = async (req, res) => {
             var notify = {
               notifyMicroservice: poolEvent.Microservice,
               notifyCreatedAt: poolEvent.created_at,
-              notifyLink: "#",
+              notifyPrimaryActionLink: "#",
               notifyStatus: poolEventStatus,
               notifyParameters: poolEvent.notifyParameters,
               notifyType: "ACTION"
             };
+
 
             // var_dump(notify);
 
@@ -328,25 +339,106 @@ exports.notify = async (req, res) => {
       });
 
 
+
+      filteredEventsSec.forEach(poolEvent => {
+        console.log("filteredEventsSecForEach");
+        var promise = getStatus("eventSec", userId, poolEvent.id).then(
+          poolEventStatusResult => {
+            poolEventStatus =
+              poolEventStatusResult.length > 0
+                ? poolEventStatusResult[0].status
+                : "new"; //resp from array to string
+
+            console.log("Status1Sec", poolEventStatus);
+
+            if (poolEventStatus === "deleted") {
+              return;
+            }
+
+            var notify = {
+              notifyMicroservice: poolEvent.Microservice,
+              notifyCreatedAt: poolEvent.created_at,
+              notifyPrimaryActionLink: "#",
+              notifyStatus: poolEventStatus,
+              notifyParameters: poolEvent.notifyParameters,
+              notifyType: "ACTION"
+            };
+
+
+            // var_dump(notify);
+
+            poolEvents.push(notify);
+
+          }
+        );
+        promises.push(promise);
+      });
+
+
+
       Promise.all(promises).then(() => {
 
-
         var poolEventsFinal = [];
-        for(var x = 0; x < poolEvents.length; x++){
+        for (var x = 0; x < poolEvents.length; x++) {
+
+          poolEvents[x].notifyActions = [];
+
+          var placeholderAction = {};
+          placeholderAction.actionButton = "Details";
+          placeholderAction.actionLink = "#";
+          poolEvents[x].notifyActions.push(placeholderAction);
+
+          var placeholderAction2 = {};
+          placeholderAction2.actionButton = "Bewerbung";
+          placeholderAction2.actionLink = "#";
+          poolEvents[x].notifyActions.push(placeholderAction2);
+
+/*
+          // placeholder actions
+          if (x % 2 == 0) {
+            poolEvents[x].notifyActions = [];
+            var placeholderAction = {};
+            placeholderAction.actionButton = "button name1";
+            placeholderAction.actionLink = "https://www.googl1.de";
+            poolEvents[x].notifyActions.push(placeholderAction);
+
+            var placeholderAction2 = {};
+            placeholderAction2.actionButton = "button name2";
+            placeholderAction2.actionLink = "https://www.googl2.de";
+            poolEvents[x].notifyActions.push(placeholderAction2);
+          }
+          */
+
           //if(today < new Date (poolEvents[x].notifyValidUntil)){
-            var poolEvent = poolEvents[x];
-            poolEvent.notifyCreatedAt = dateFormat(new Date(poolEvents[x].notifyCreatedAt), "dd.mm.yyyy h:MM:ss");
-            poolEventsFinal.push(poolEvent);
-            // poolEventsFinal[x].notifyValidUntil = dateFormat(new Date(poolEventsFinal[x].notifyValidUntil), "h:MM:ss dd.mm.yyyy");
+          var poolEvent = poolEvents[x];
+
+          var now = new Date();
+          var secondDate = new Date(poolEvents[x].notifyCreatedAt);
+          var timeDifference = Math.abs(now.getTime() - secondDate.getTime());
+          let differentDays = Math.ceil(timeDifference / (1000 * 3600 * 24));
+         // differentDays=differentDays-1;
+          differentDays=differentDays-28;
+           console.log("TIME differentDays " + differentDays);
+
+          // poolEvent.notifyCreatedAt = dateFormat(new Date(poolEvents[x].notifyCreatedAt), "dd.mm.yyyy h:MM:ss");
+          poolEvent.notifyCreatedAt = differentDays;
+          poolEventsFinal.push(poolEvent);
+          // poolEventsFinal[x].notifyValidUntil = dateFormat(new Date(poolEventsFinal[x].notifyValidUntil), "h:MM:ss dd.mm.yyyy");
           //}
+
+
         }
+
+        poolEventsFinal.sort(function (a, b) {
+          return parseInt(a.notifyCreatedAt) - parseInt(b.notifyCreatedAt);
+        });
 
 
         res.json(poolEventsFinal);
 
         //sortBy(poolEvents, s => -new Date(s.notifyCreatedAt));
         // var_dump(poolEvents);
-       // res.json(poolEvents);
+        // res.json(poolEvents);
       });
     }
   } catch (error) {
@@ -355,14 +447,15 @@ exports.notify = async (req, res) => {
 };
 
 exports.authenticate = async (req, res) => {
+
   try {
-    const { code, state } = req.query;
-    console.log(code);
+    const {code, state} = req.query;
+   // console.log(code);
     const s = await fetchToken(code);
-    console.log(s);
+    //console.log(s);
 
     const p = await fetchProfile(s.access_token);
-    console.log(p);
+    //console.log(p);
 
     var userZip = p.profiles[0].supporter.address[0].zip;
     var userCity = p.profiles[0].supporter.address[0].city;
@@ -383,10 +476,16 @@ exports.authenticate = async (req, res) => {
 
 const fetchToken = async code => {
   try {
+
+    let res = await Axios.get(`https://stage.vivaconagua.org/drops/oauth2/access_token?grant_type=authorization_code&client_id=notify&code=${code}&redirect_uri=http://localhost:8005/v1/events/oauth`);
+    /*
     const { data } = await Axios.get(
       `https://stage.vivaconagua.org/drops/oauth2/access_token?grant_type=authorization_code&client_id=notify&code=${code}&redirect_uri=http://localhost:8005/v1/events/oauth`
     );
-    return data;
+    */
+    console.log(res);
+    // return data;
+    return res.data;
   } catch (error) {
     throw error;
   }
@@ -394,10 +493,11 @@ const fetchToken = async code => {
 
 const fetchProfile = async access_token => {
   try {
-    const { data } = await Axios.get(
+    const {data} = await Axios.get(
       "https://stage.vivaconagua.org/drops/oauth2/rest/profile?access_token=" +
-        access_token
+      access_token
     );
+
 
     return data;
   } catch (error) {
@@ -406,10 +506,9 @@ const fetchProfile = async access_token => {
 };
 
 
-
 const fetchApplications = async config => {
   try {
-    const { data } = await Axios.get(
+    const {data} = await Axios.get(
       "http://localhost:5000/waves/api/v1/application/user/" + config,
       config
     );
@@ -421,7 +520,7 @@ const fetchApplications = async config => {
 
 const fetchFavorites = async config => {
   try {
-    const { data } = await Axios.get(
+    const {data} = await Axios.get(
       "http://localhost:5000/waves/api/v1/favorite/user/" + config,
       config
     );
@@ -433,7 +532,7 @@ const fetchFavorites = async config => {
 
 const fetchComments = async event => {
   try {
-    const { data } = await Axios.get(
+    const {data} = await Axios.get(
       "http://localhost:5000/waves/api/v1/comment/" + event
     );
     return data;
@@ -444,7 +543,7 @@ const fetchComments = async event => {
 
 const fetchEvent = async event => {
   try {
-    const { data } = await Axios.get(
+    const {data} = await Axios.get(
       "http://localhost:5000/waves/api/v1/poolevent/notify/" + event
     );
     return data;

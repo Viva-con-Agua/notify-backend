@@ -76,7 +76,8 @@ exports.updateLastSeen = (type, userId, pooleventId, callback) => {
 };
 
 exports.deleteEvents = async (req, res) => {
-  console.log("deleteEvents");
+
+  //console.log(req.body);
 
   var userId = "a1f198b5-09f0-4271-b3b3-89e4a0e655e7";
 
@@ -93,9 +94,9 @@ exports.deleteEvents = async (req, res) => {
     promises.push(promise);
     */
 
-    console.log("DELETE ",userId,notifyType,typeId,status);
+   // console.log("DELETE ",userId,notifyType,typeId,status);
     const resp =  await addNotify(userId,notifyType,typeId,status);
-    console.log("SUCCESS DELETE: " + resp.success);
+    //console.log("SUCCESS DELETE: " + resp.success);
 
 
 
@@ -114,7 +115,6 @@ exports.deleteEvents = async (req, res) => {
 
 /*
   Promise.all(promises).then(values => {
-    console.log("beide fertig");
 
     res.status(200).json({
       success: true,
@@ -124,7 +124,7 @@ exports.deleteEvents = async (req, res) => {
   });
   */
 
-  console.log();
+  //console.log();
 
 
 
@@ -136,7 +136,7 @@ function addNotify(userId,notifyType,typeId,status) {
   return new Promise(resolve => {
 
     const sql = `UPDATE notifications SET date=CURRENT_TIMESTAMP(), status='${status}' WHERE type_id='${typeId}' AND user_id='${userId}' AND type='${notifyType}'`;
-    console.log(sql);
+   // console.log(sql);
     global.conn.query(sql, (error, answ) => {
       //console.log(answ);
       if (error) {
@@ -164,14 +164,14 @@ function addNotify(userId,notifyType,typeId,status) {
 
 
 exports.deleteEventsOld = (req, res) => {
-  console.log("del");
+ // console.log("del");
 
 
   const { id } = req.params;
   const sql = `UPDATE notifications SET date=CURRENT_TIMESTAMP(), status='seen' WHERE type_id='${id}' AND user_id = 'a1f198b5-09f0-4271-b3b3-89e4a0e655e7' AND type = 'event'`;
-  console.log(sql);
+ // console.log(sql);
   global.conn.query(sql, (error, comment) => {
-    console.log(comment);
+    //console.log(comment);
     if (error) {
       res.status(400).json({
         success: false,
@@ -180,9 +180,9 @@ exports.deleteEventsOld = (req, res) => {
     } else {
       if (comment.affectedRows === 0) {
         const sql = `INSERT INTO notifications SET date=CURRENT_TIMESTAMP(), status='seen', type_id='${id}', user_id = 'a1f198b5-09f0-4271-b3b3-89e4a0e655e7',type = 'event'`;
-        console.log(sql);
+        //console.log(sql);
         global.conn.query(sql, (error, comment) => {
-          console.log(comment);
+          //console.log(comment);
 
           if (error) {
             res.status(400).json({
