@@ -22,7 +22,7 @@ exports.update = async (Microservice) => {
           return {
             updateOne: {
               filter: { typeId: notification.typeId, type: notification.type },
-              update: { $set: notification },
+              update: { $set: {notification} },
               upsert: true,
             },
           };

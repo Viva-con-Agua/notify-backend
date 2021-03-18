@@ -26,13 +26,13 @@ router.get("/", (req, res) => {
 router.route("/oauth").get(authenticate);
 
 router.route("/notifications").get(verify, notifications);
-router.route("/updateStatus").post(updateNotificationStatus);
+router.route("/updateStatus").post(verify, updateNotificationStatus);
 
 router.route("/filter").get(filter);
 router.route("/apis").get(apis);
 
 router.route("/testAPI").post(verify, testAPI);
-router.route("/info").get(verify, info);
+router.route("/info").post(verify, info);
 router.route("/saveCategories").post(verify, saveCategories);
 router.route("/saveConditions").post(verify, saveConditions);
 

@@ -5,13 +5,56 @@ exports.authenticate = async (req, res) => {
     // const { code, state } = req.query;
     console.log("oauth");
 
-    var p = await Axios.post("http://localhost:1323/v1/auth/signin", {
-      email: "dennis_kleber@mailbox.org",
-      password: "testtest",
-      service: "drops-backend",
-    });
+    // var p = await Axios.post("http://localhost:1323/v1/auth/signin", {
+    //   email: "dennis_kleber@mailbox.org",
+    //   password: "testtest",
+    //   service: "drops-backend",
+    // });
 
-    console.log(p.data);
+        var p = await Axios.post("http://localhost:1323/v1/auth/signin", {"email":"nicola@schulze-sulingen.de","password":"sulzeniq","scope":"factory"});
+        
+        var code = p.payload.code;
+        var ac = await Axios.get(`http://localhost:1323/v1/auth/login/token?code=${code}`);
+
+    // console.log(p.data);
+
+    p = {"data": {
+      "uuid": "933b17a7-f44a-4b94-841d-b3b1cb2e3674",
+    "address": [{
+        "zip": "10365",
+        "city": "berlin"
+    }],
+    "crew": ["berlin", "hamburg"],
+    "filter": {
+        "website": {
+            "invested": false,
+            "own": true,
+            "location": true
+        },
+        "email": {
+            "contact_data": "nicola@schulze-sulingen.de",
+            "invested": true,
+            "own": false,
+            "location": false
+        },
+        "wireshark": {
+            "contact_data": "eH8Dmpkh7",
+            "invested": true,
+            "own": true,
+            "location": false
+        },
+        "telegram": {
+            "contact_data": "943400998",
+            "invested": true,
+            "own": false,
+            "location": false
+        }
+    },
+    "full_name": "dennis kleber",
+    "invested": [458, 469, 461, 459],
+    "access_token": "1234",
+    "email": null
+}};
 
     // const s = await fetchToken(code);
     // console.log("access_token fetched: " + s.access_token);
@@ -38,7 +81,7 @@ exports.authenticate = async (req, res) => {
     //     console.log("Number of documents upserted: " + res.result.nUpserted);
     //   }
     // );
-    p = p.data.additional.profile;
+    // p = p.data.additional.profile;
 
     // global.conn
     //   .collection("user")
@@ -58,9 +101,9 @@ exports.authenticate = async (req, res) => {
     //     console.log("Number of documents Inserted: " + res.nInserted);
 
     //   });
-    var s = {
-      access_token: "1234",
-    };
+    // var s = {
+    //   access_token: "1234",
+    // };
 
     await global.conn.collection("user").updateOne(
       { id: p.uuid },
@@ -96,7 +139,7 @@ exports.authenticate = async (req, res) => {
     var date = new Date();
     date.setTime(date.getTime() + 10 * 60 * 1000);
     res
-      .cookie("access_token", s.access_token, { expires: date })
+      // .cookie("access_token", s.access_token, { expires: date })
       .redirect(state);
   } catch (error) {
     console.log(error);

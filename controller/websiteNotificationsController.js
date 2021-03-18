@@ -14,6 +14,7 @@ exports.notifications = async (req, res) => {
       .find()
       .toArray();
 
+
     user = req.user;
     var userZip = user.address[0].zip;
     var userCity = user.address[0].city;
@@ -110,6 +111,7 @@ exports.notifications = async (req, res) => {
         var matched = false;
 
         for (var j = 0; j < entries.length; j++) {
+
           if (entries[j].notificationId == output[i].notification._id) {
             if (entries[j].status == "deleted") {
               output.splice(i, 1);
@@ -179,6 +181,7 @@ exports.updateNotificationStatus = async (req, res) => {
   console.log("STATUS UPDATE");
   console.log(body);
 
+
   try {
     var bulkUpdateOps = body.ids.map(function (id) {
       return {
@@ -188,7 +191,7 @@ exports.updateNotificationStatus = async (req, res) => {
             $set: {
               notificationId: id,
               status: body.status,
-              userId: body.user,
+              userId: req.user.id,
             },
           },
           upsert: true,

@@ -34,7 +34,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 connectMongo();
-app.use(cors());
+// app.use(cors());
+
+
+app.use(cors({origin: 'http://localhost:8080', credentials: true}));
+
 
 app.use("/api/v1", routes);
 

@@ -115,6 +115,8 @@ exports.testAPI = async (req, res) => {
 exports.info = async (req, res) => {
   const { body } = req;
   console.log("GET API INFO");
+  console.log(body);
+
   listPromises = [];
   listInnerPromises = [];
 
