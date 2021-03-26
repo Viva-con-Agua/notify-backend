@@ -1,0 +1,40 @@
+version: '3'
+services:
+  notify-backend:
+    image: vivaconagua/notify-backend:stage
+    networks:
+      - vca-net
+    build: .
+    env_file:
+      - config/.env
+    container_name: notify-backend
+    restart: unless-stopped
+    links: 
+        - notify-database:db
+    environment:
+        - HOST=notify-database
+    ports:
+      - "8005:8005"
+    depends_on:
+      - nats
+
+  notify-database:
+    image: mongo
+    container_name: notify-database
+    networks:
+      - vca-net
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=notify
+      - MONGO_INITDB_ROOT_PASSWORD=notify
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./config/db_dump:/docker-entrypoint-initdb.d
+
+
+
+networks:
+  vca-net:
+    driver: bridge
+
+

@@ -25,7 +25,6 @@ both running in docker container
 For user authentication:
 
 - Running redis-api nats-api and nginx-api from https://github.com/Viva-con-Agua/api-deploy
-- Running drops-backend and drops-database from https://github.com/Viva-con-Agua/drops-backend
 
 (For testing purposes - user authentication can be done locally (See: ))
 
@@ -50,6 +49,11 @@ For Development:
 - start drops backend and database
 
   - run docker-compose up on https://github.com/Viva-con-Agua/drops-backend project
+
+
+- load mongodb dump
+
+  - go to ./config and run: mongodump --host="localhost" --port="27017" -u="notify" -p="notify"
 
 - npm install
 - change config/development.env to .env and change values if your database or anything else is running on different ports
